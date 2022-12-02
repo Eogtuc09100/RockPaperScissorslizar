@@ -7,7 +7,7 @@ Classes
     Player
     HumanPlayer (subclass of Player)
     ComputerPlayer (subclass of Player
-    Game
+    Gam
 
 """
 import random
