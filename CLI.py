@@ -1,4 +1,4 @@
-from game_objects import Game, PlayerObject, ComputerPlayer
+from game_objects import Game, ComputerPlayer
 import random
 
 class CLI:
@@ -23,12 +23,15 @@ class CLI:
 
     def get_choices(self):
         for player in self.game.players:
+            #print(isinstance(player, ComputerPlayer))
+            print(player)
             if isinstance(player, ComputerPlayer):
+                print("coputer")
                 player.choose_object()
             else:
                 choice = input(f"{player.name} choose your object. ")
                 player.choose_object(choice)
-            print(player.current_object)
+        #print(player.current_object)
 
     def run_game(self):
         self.get_choices()
