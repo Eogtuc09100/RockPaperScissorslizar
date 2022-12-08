@@ -212,7 +212,7 @@ class Game:
         if win_dict is None:
             win_dict = RPSLS_WIN_DICT
 
-        self.current_round = 0
+        self.current_round = 1
         self.max_rounds = None
         self.players = []
         self.round_result = None
@@ -276,16 +276,22 @@ class Game:
 
     def is_finished(self):
         """ Checks if game is finished """
-        return self.current_round >= self.max_rounds
+        return self.current_round > self.max_rounds
 
     def reset(self):
         """ Resets the whole game, setting current round to 0 and player scores to 0"""
-        self.current_round = 0
+        self.current_round = 1
         self.round_result = None
         self.round_winner = None
         for player in self.players:
             player.score = 0
             player.reset_object()
+
+    def full_reset(self):
+        self.current_round = 1
+        self.round_result = None
+        self.round_winner = None
+        self.players = []
 
     def report_round(self):
         """ returns a message reporting on what the players played and what the result of the round was """

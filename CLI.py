@@ -8,7 +8,9 @@ class CLI:
     def set_up(self):
         print(f"Game Begins\n------------")
         for i in range(2):
-            player_type = input(f"Will player {i+1} be a player or a computer? ").lower()
+            player_type = "N/A"
+            while player_type not in ["computer","player"]:
+                player_type = input(f"Will player {i+1} be a player or a computer? ").lower()
             if player_type == "player":
                 player_name = input(f"Player {i+1} name? ")
                 self.game.add_human_player(player_name)
@@ -24,9 +26,7 @@ class CLI:
     def get_choices(self):
         for player in self.game.players:
             #print(isinstance(player, ComputerPlayer))
-            print(player)
             if isinstance(player, ComputerPlayer):
-                print("coputer")
                 player.choose_object()
             else:
                 choice = input(f"{player.name} choose your object. ")
@@ -36,19 +36,50 @@ class CLI:
     def run_game(self):
         self.get_choices()
         self.game.find_winner()
-        print(self.game.report_round())
-        print(self.game.report_score())
-        if self.game.is_finished():
-            print(self.game.report_winner())
-        else:
+        input(self.game.report_round())
+        print(f"\n")
+        input(self.game.report_score())
+        print(f"\n")
+        if not self.game.is_finished():
             self.game.next_round()
 
+    def finished_game(self):
+        print(self.game.report_winner())
+
+        inp = "N/A"
+
+        while inp not in ["1", "2"]:
+            inp = input(f"\n1. Play again\n2. Main Menu\n")
+
+        if inp == "1":
+            self.game.reset()
+            self.run_sequence()
+
+        else:
+            self.game.full_reset()
+
     def run_sequence(self):
-        self.set_up()
         while not self.game.is_finished():
             self.run_game()
-        self.game.report_winner()
+        self.finished_game()
+
+    def menu(self):
+        print(f"Welcome to the game!\n")
+        print(f"1. New Game\n2. Exit")
+
+        inp = ""
+        while inp not in ["1", "2"]:
+            inp = input()
+
+        if inp == "1":
+            self.set_up()
+            self.run_sequence()
+
+        else:
+            quit()
+
+
 
 if __name__ == "__main__":
     cli = CLI()
-    cli.run_sequence()
+    cli.menu()
