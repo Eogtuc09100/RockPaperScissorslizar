@@ -1,0 +1,107 @@
+import tkinter as tk
+from game_objects import Game, PlayerObject
+from functools import partial
+
+
+class GameApp(tk.Tk):
+    """ GameApp initialises a game and a Tk instance (window)
+    The window includes a title and sets up frames with the different views on the game
+    The show_frame method unpacks all the frames except for the one that needs to be shown """
+
+    def __init__(self):
+        super().__init__()
+        self.game = create_game()
+        title_string = ", ".join(obj.title() for obj in PlayerObject.allowable_objects) + " Game"
+
+        # Set the window title
+        self.title(title_string)
+        self.geometry("300x250")
+
+        # Create a dictionary of frames. The key identifies the frame and the value is an instance of the
+        # frame object
+        self.frames = {
+            "main_menu_frame": MainMenu(self),
+            "setup_frame": Setup(self),
+            "choose_object_frame": ChooseObject(self),
+            "report_round_frame": ReportRound(self),
+            "game_over_frame": GameOver(self)}
+
+        # Show the GameOptionsGUI frame
+        self.show_frame("main_menu_frame")
+
+    # Function to show the desired game class, which is a subclass of tk.Frame
+    def show_frame(self, current_frame: str):
+        widgets = self.winfo_children()
+        # Forget all the existing frames
+        for w in widgets:
+            if w.winfo_class() == "Frame":
+                w.pack_forget()
+
+        # Find and pack the current_frame
+        frame_to_show = self.frames[current_frame]
+        frame_to_show.pack(expand=True, fill=tk.BOTH)
+        frame_to_show.set_up()
+
+
+class MainMenu(tk.Frame):
+    def __init__(self, controller: GameApp):
+        super().__init__()
+        self.controller = controller
+        self.title_label = tk.Label(self, text="RPSLS", font=65)
+        self.newgame_button = tk.Button(self, text="New Game", command=self.next_frame)
+        self.exit_button = tk.Button(self, text="Exit", command=quit)
+
+        self.pack_widgets()
+
+    def pack_widgets(self):
+        self.title_label.grid(row=0, column=0)
+        self.newgame_button.grid(row=1, column=0)
+        self.exit_button.grid(row=2, column=0)
+
+
+    def set_up(self):
+        # Add code to set up variables for this frame. Note this refers to the game object stored on
+        # the main app (the controller)
+        #self.round_number.set(self.controller.game.current_round)
+        ...
+
+    def next_frame(self):
+        self.controller.show_frame("setup_frame")
+
+
+class Setup(tk.Frame):
+    def __init__(self, controller: GameApp):
+        super().__init__()
+        self.controller = controller
+
+
+    def set_up(self):
+        # Add code to set up variables for this frame
+        ...
+
+    def next_frame(self):
+        self.controller.show_frame("game_over_frame")
+
+
+class ChooseObject(tk.Frame):
+    ...
+
+
+class ReportRound(tk.Frame):
+    ...
+
+
+class GameOver(tk.Frame):
+    ...
+
+
+def create_game():
+    game = Game()
+    game.player = game.add_human_player()
+    game.add_computer_player()
+    return game
+
+
+if __name__ == "__main__":
+    app = GameApp()
+    app.mainloop()
