@@ -1,6 +1,7 @@
 import tkinter as tk
-from game_objects import Game, PlayerObject
-from functools import partial
+from game_objects import Game, PlayerObject, HumanPlayer
+from tkinter import ttk
+import time
 
 
 class GameApp(tk.Tk):
@@ -15,7 +16,7 @@ class GameApp(tk.Tk):
 
         # Set the window title
         self.title(title_string)
-        self.geometry("300x250")
+        # self.geometry("300x250")
 
         # Create a dictionary of frames. The key identifies the frame and the value is an instance of the
         # frame object
@@ -40,7 +41,7 @@ class GameApp(tk.Tk):
         # Find and pack the current_frame
         frame_to_show = self.frames[current_frame]
         frame_to_show.pack(expand=True, fill=tk.BOTH)
-        frame_to_show.set_up()
+        frame_to_show.setup()
 
 
 class MainMenu(tk.Frame):
@@ -58,11 +59,7 @@ class MainMenu(tk.Frame):
         self.newgame_button.grid(row=1, column=0)
         self.exit_button.grid(row=2, column=0)
 
-
-    def set_up(self):
-        # Add code to set up variables for this frame. Note this refers to the game object stored on
-        # the main app (the controller)
-        #self.round_number.set(self.controller.game.current_round)
+    def setup(self):
         ...
 
     def next_frame(self):
@@ -73,22 +70,118 @@ class Setup(tk.Frame):
     def __init__(self, controller: GameApp):
         super().__init__()
         self.controller = controller
+        self.player1_label = tk.Label(self, text="Player 1:")
+        self.player1_type_label = tk.Label(self, text="Type:")
+        self.player1_type_combobox = ttk.Combobox(self, values=["Computer", "Player"])
+        self.player1_type_combobox.current(1)
+        self.player1_name_label = tk.Label(self, text="Name:")
+        self.player1_name_entry = tk.Entry(self)
 
+        self.player2_label = tk.Label(self, text="Player 2:")
+        self.player2_type_label = tk.Label(self, text="Type:")
+        self.player2_type_combobox = ttk.Combobox(self, values=["Computer", "Player"])
+        self.player2_type_combobox.current(1)
+        self.player2_name_label = tk.Label(self, text="Name:")
+        self.player2_name_entry = tk.Entry(self)
 
-    def set_up(self):
-        # Add code to set up variables for this frame
+        self.max_rounds_label = tk.Label(self, text="Max Rounds:")
+        self.max_rounds_entry = tk.Entry(self)
+
+        self.confirm_button = tk.Button(self, text="Confirm", command=self.submit_setup)
+
+        self.pack_widgets()
+
+    def pack_widgets(self):
+        self.player1_label.grid(row=0, column=0)
+        self.player1_type_label.grid(row=1, column=0)
+        self.player1_type_combobox.grid(row=1, column=1)
+        self.player1_name_label.grid(row=2, column=0)
+        self.player1_name_entry.grid(row=2, column=1)
+
+        self.player2_label.grid(row=3, column=0)
+        self.player2_type_label.grid(row=4, column=0)
+        self.player2_type_combobox.grid(row=4, column=1)
+        self.player2_name_label.grid(row=5, column=0)
+        self.player2_name_entry.grid(row=5, column=1)
+
+        self.max_rounds_label.grid(row=6, column=0, pady=20)
+        self.max_rounds_entry.grid(row=6, column=1, pady=20)
+
+        self.confirm_button.grid(row=7, column=0, columnspan=2)
+
+    def setup(self):
         ...
 
-    def next_frame(self):
-        self.controller.show_frame("game_over_frame")
+    def submit_setup(self):
+        if self.player1_type_combobox == "Computer":
+            self.controller.game.add_computer_player()
+
+        else:
+            self.controller.game.add_human_player(self.player1_name_entry.get())
+
+        if self.player2_type_combobox == "Computer":
+            self.controller.game.add_computer_player()
+
+        else:
+            self.controller.game.add_human_player(self.player2_name_entry.get())
+
+        self.controller.game.set_max_rounds(int(self.max_rounds_entry.get()))
+        print(self.controller.game.players)
+        self.controller.show_frame("choose_object_frame")
 
 
 class ChooseObject(tk.Frame):
-    ...
+    def __init__(self, controller: GameApp):
+        super().__init__()
+        self.controller = controller
+
+        self.current_name = ""
+        self.current_player = "1"
+        self.current_choice_chosen = False
+        self.choice_chosen = "N/A"
+
+        self.player_name_label = tk.Label(self, text=f"Choose your object player {self.current_player}:")
+        self.choice_combobox = ttk.Combobox(self, values=["rock", "paper", "scissors", "lizard", "spock"])
+        self.choice_combobox.current(1)
+        self.submit_choice_button = tk.Button(self, text="Submit", command=self.submit_choice)
+
+    def pack_choice_gui(self):
+        self.player_name_label.grid(row=0, column=0, columnspan=3)
+        self.choice_combobox.grid(row=1, columnspan=3)
+        self.submit_choice_button.grid(row=2, column=0, columnspan=2)
+
+    def setup(self):
+        time.sleep(5)
+        for player in self.controller.game.players:
+            if isinstance(player, HumanPlayer):
+                self.current_name = player.name
+                self.pack_choice_gui()
+                while not self.current_choice_chosen:
+                    time.sleep(5)
+
+                player.choose_object(self.choice_chosen)
+
+            else:
+                player.choose_object()
+
+    def submit_choice(self):
+        self.choice_chosen = self.choice_combobox.get()
+        self.current_choice_chosen = True
 
 
 class ReportRound(tk.Frame):
-    ...
+    def __init__(self, controller: GameApp):
+        super().__init__(controller)
+        self.controller = controller
+        self.next_round_button = tk.Button(self, text="Next Round", command=self.next_round)
+
+        self.pack_widgets()
+
+    def pack_widgets(self):
+        self.next_round_button.grid(row=5, column=0, columnspan=3)
+
+    def next_round(self):
+        self.controller.show_frame("choose_object_frame")
 
 
 class GameOver(tk.Frame):
@@ -97,11 +190,10 @@ class GameOver(tk.Frame):
 
 def create_game():
     game = Game()
-    game.player = game.add_human_player()
-    game.add_computer_player()
     return game
 
 
 if __name__ == "__main__":
     app = GameApp()
     app.mainloop()
+
