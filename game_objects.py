@@ -276,7 +276,7 @@ class Game:
 
     def is_finished(self):
         """ Checks if game is finished """
-        return self.current_round > self.max_rounds
+        return self.current_round >= self.max_rounds
 
     def reset(self):
         """ Resets the whole game, setting current round to 0 and player scores to 0"""
