@@ -54,8 +54,6 @@ class MainMenu(tk.Frame):
         self.newgame_button = tk.Button(self, text="New Game", command=self.next_frame)
         self.exit_button = tk.Button(self, text="Exit", command=quit)
 
-        self.pack_widgets()
-
     # widgets gridded
     def pack_widgets(self):
         self.title_label.grid(row=0, column=0)
@@ -64,7 +62,7 @@ class MainMenu(tk.Frame):
 
     # empty setup as nothing needs to be done
     def setup(self):
-        ...
+        self.pack_widgets()
 
     # starts the next frame
     def next_frame(self):
@@ -106,8 +104,6 @@ class Setup(tk.Frame):
 
         self.confirm_button = tk.Button(self, text="Confirm", command=self.submit_setup)
 
-        self.pack_widgets()
-
     def pack_widgets(self):
         self.player1_label.grid(row=0, column=0)
         self.player1_type_label.grid(row=1, column=0)
@@ -127,7 +123,7 @@ class Setup(tk.Frame):
         self.confirm_button.grid(row=7, column=0, columnspan=2)
 
     def setup(self):
-        ...
+        self.pack_widgets()
 
     # protocol for when change in state in combo-box happens
     def combobox_change(self, x, y, z):
@@ -177,9 +173,15 @@ class ChooseObject(tk.Frame):
         self.player2_name_label = tk.Label(self, textvariable=self.player2_name)
         self.choice2_combobox = ttk.Combobox(self, values=["rock", "paper", "scissors", "lizard", "spock"])
         self.choice2_combobox.current(1)
-        self.submit_choice_button = tk.Button(self, text="Submit", command=self.submit_choices)
 
-        self.pack_choice_gui()
+        self.hide_player1text = tk.StringVar()
+        self.hide_player2text = tk.StringVar()
+        self.hide_player1 = tk.Button(self, textvariable=self.hide_player1text,
+                                      command=lambda: self.hide(1, self.hide_player1text.get()))
+        self.hide_player2 = tk.Button(self, textvariable=self.hide_player2text,
+                                      command=lambda: self.hide(2, self.hide_player2text.get()))
+
+        self.submit_choice_button = tk.Button(self, text="Submit", command=self.submit_choices)
 
     def pack_choice_gui(self):
         self.player1_name_label.grid(row=0, column=0)
@@ -188,11 +190,20 @@ class ChooseObject(tk.Frame):
         self.choice2_combobox.grid(row=1, column=1)
         self.submit_choice_button.grid(row=2, column=0, columnspan=2)
 
+        # combo_boxes
+        self.hide_player1.grid(row=0, column=2)
+        self.hide_player2.grid(row=1, column=2)
+
     # whether combobox is used depends on whether player1/2 is a computer
     def setup(self):
+        self.pack_choice_gui()
         # names of players set to string var for use in GUI
         self.player1_name.set(self.controller.game.players[0].name)
         self.player2_name.set(self.controller.game.players[1].name)
+
+        # both selections set to hide initially
+        self.hide_player1text.set("Hide")
+        self.hide_player2text.set("Hide")
 
         if isinstance(self.controller.game.players[0], HumanPlayer):
             self.choice1_combobox.configure(state="enabled")
@@ -203,6 +214,25 @@ class ChooseObject(tk.Frame):
             self.choice2_combobox.configure(state="enabled")
         else:
             self.choice2_combobox.configure(state="disabled")
+
+    def hide(self, player, hide_or_show):
+        if player == 1:
+            if hide_or_show == "Show":
+                self.hide_player1.grid(row=0, column=2)
+                self.hide_player1text.set("Hide")
+
+            else:
+                self.choice1_combobox.grid_forget()
+                self.hide_player1text.set("Show")
+
+        else:
+            if hide_or_show == "Show":
+                self.hide_player2.grid(row=1, column=2)
+                self.hide_player2text.set("Hide")
+
+            else:
+                self.choice2_combobox.grid_forget()
+                self.hide_player2text.set("Show")
 
     # when submit is pressed current choices are submitted
     def submit_choices(self):
@@ -226,7 +256,7 @@ class ChooseObject(tk.Frame):
 
 
 class ReportRound(tk.Frame):
-    #report round text is gridded
+    # report round text is gridded
     def __init__(self, controller: GameApp):
         super().__init__()
         self.controller = controller
@@ -238,14 +268,13 @@ class ReportRound(tk.Frame):
         self.report_score_label = tk.Label(self, textvariable=self.report_score)
         self.next_round_button = tk.Button(self, text="Next Round", command=self.next_round)
 
-        self.pack_widgets()
-
     def pack_widgets(self):
         self.report_round_label.grid(row=0, column=0, columnspan=3)
         self.report_score_label.grid(row=1, column=0, columnspan=3)
         self.next_round_button.grid(row=5, column=0, columnspan=3)
 
     def setup(self):
+        self.pack_widgets()
         self.controller.game.find_winner()
         self.round_result.set(self.controller.game.report_round())
         self.report_score.set(self.controller.game.report_score())
@@ -270,14 +299,13 @@ class GameOver(tk.Frame):
         self.play_again_button = tk.Button(self, text="Play Again", command=self.play_again)
         self.main_menu_button = tk.Button(self, text="Main Menu", command=self.main_menu)
 
-        self.pack_widgets()
-
     def pack_widgets(self):
         self.report_winner_label.grid(row=0, column=0)
         self.play_again_button.grid(row=1, column=0)
         self.main_menu_button.grid(row=1, column=1)
 
     def setup(self):
+        self.pack_widgets()
         self.report_winner.set(self.controller.game.report_winner())
 
     # you can play again or return to the main menu
